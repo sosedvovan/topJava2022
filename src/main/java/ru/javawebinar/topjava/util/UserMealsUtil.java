@@ -6,16 +6,16 @@ import ru.javawebinar.topjava.model.UserMealWithExcess;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class UserMealsUtil {
     public static void main(String[] args) {
         List<UserMeal> meals = Arrays.asList(
-                new UserMeal(LocalDateTime.of(2020, Month.JANUARY, 30, 10, 0), "Завтрак", 500),
+                new UserMeal(LocalDateTime.of(2020, Month.JANUARY, 30, 10, 0), "Завтрак", 510),
                 new UserMeal(LocalDateTime.of(2020, Month.JANUARY, 30, 13, 0), "Обед", 1000),
                 new UserMeal(LocalDateTime.of(2020, Month.JANUARY, 30, 20, 0), "Ужин", 500),
-                new UserMeal(LocalDateTime.of(2020, Month.JANUARY, 31, 0, 0), "Еда на граничное значение", 100),
+//                new UserMeal(LocalDateTime.of(2020, Month.JANUARY, 31, 0, 0), "Еда на граничное значение", 100),
                 new UserMeal(LocalDateTime.of(2020, Month.JANUARY, 31, 10, 0), "Завтрак", 1000),
                 new UserMeal(LocalDateTime.of(2020, Month.JANUARY, 31, 13, 0), "Обед", 500),
                 new UserMeal(LocalDateTime.of(2020, Month.JANUARY, 31, 20, 0), "Ужин", 410)
@@ -29,8 +29,72 @@ public class UserMealsUtil {
 
     public static List<UserMealWithExcess> filteredByCycles(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
         // TODO return filtered list with excess. Implement by cycles
-        return null;
+
+        //сгруппировали UserMeal по дате и получили мапу
+        Map<Integer, List<UserMeal>> collect = meals.stream()
+                .collect(Collectors.groupingBy(m -> m.getDateTime().getDayOfMonth()));
+        System.out.println("сгруппированная по дате мапа объектов UserMeal");
+        System.out.println(collect);
+        //на этой мапе получаем итератор
+        Iterator<Map.Entry<Integer, List<UserMeal>>> iterator = collect.entrySet().iterator();
+        //подготовим лист для всех обектов UserMealWithExcess с правильным полем excess
+        List<UserMealWithExcess> resultsUserMealWithExcess = new ArrayList<>();
+        //итерируемся по каждой ентри и если ее ключ <= или >caloriesPerDay
+        //берем значение ентри(List<UserMeal>) делаем UserMealWithExcess из элементов в List<UserMeal>
+        //налету задавая значение поля excess(false или true) и КЛАДЕМ в resultsUserMealWithExcess
+        while (iterator.hasNext()){
+            //получаем ентри пару
+            Map.Entry<Integer, List<UserMeal>> next = iterator.next();
+            //из ентри пары берем значение - это лист с UserMeal из одной даты
+            //и надо в этой дате подчитать калории
+            List<UserMeal> value = next.getValue();
+            //заведем счетчик калорий за день sumPerDay
+            int sumPerDay = 0;
+            //идем пол листу одного дня и считаем дневные калории
+            for (int i = 0; i < value.size(); i++){
+                sumPerDay += value.get(i).getCalories();
+            }
+            //сравниваем подчитанные калории с заданными, если меньше - тогда переедание = false
+            if(sumPerDay <= caloriesPerDay){
+
+                for(int i = 0; i < value.size(); i++){
+                    resultsUserMealWithExcess.add(new UserMealWithExcess(value.get(i).getDateTime(),
+                            value.get(i).getDescription(), value.get(i).getCalories(), false));
+                }
+            }else {
+                for(int i = 0; i < value.size(); i++){
+                    resultsUserMealWithExcess.add(new UserMealWithExcess(value.get(i).getDateTime(),
+                            value.get(i).getDescription(), value.get(i).getCalories(), true));
+                }
+            }
+            sumPerDay = 0;
+        }
+
+        //получили лист resultsUserMealWithExcess со всеми имеющимися UserMealWithExcess с
+        // правильным полем excess. Теперь надо отфильтровать по заданному промежутку времени
+        System.out.println("все имеющиеся UserMealWithExcess с правильным полем excess");
+        System.out.println(resultsUserMealWithExcess);
+
+        //подготовим лист для отфильтрованных по заданному промежутку UserMealWithExcess
+        List<UserMealWithExcess> resultsUserMealWithExcessFiltered = new ArrayList<>();
+
+        //с помощью утильного метода фильтруем элементы листа resultsUserMealWithExcess
+        for(int i = 0; i < resultsUserMealWithExcess.size(); i++){
+            if(TimeUtil.isBetweenInclusive(LocalTime.of(resultsUserMealWithExcess.get(i).getDateTime().getHour(),
+                    resultsUserMealWithExcess.get(i).getDateTime().getMinute()), startTime, endTime)) {
+
+                resultsUserMealWithExcessFiltered.add(resultsUserMealWithExcess.get(i));
+            }
+        }
+
+        //возвращаем лист с отфильтрованными результатами
+        return resultsUserMealWithExcessFiltered;
     }
+
+
+
+
+
 
     public static List<UserMealWithExcess> filteredByStreams(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
         // TODO Implement by streams
