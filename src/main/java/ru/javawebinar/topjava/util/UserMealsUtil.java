@@ -3,6 +3,7 @@ package ru.javawebinar.topjava.util;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.MealTo;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
@@ -21,11 +22,43 @@ public class UserMealsUtil {
                 new Meal(LocalDateTime.of(2020, Month.JANUARY, 31, 20, 0), "Ужин", 410)
         );
 
-        List<MealTo> mealsTo = filteredByCycles(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
-        mealsTo.forEach(System.out::println);
+        List<MealTo> mealsTo1 = getFilteredWithExcess(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
+        mealsTo1.forEach(System.out::println);
+
+//        List<MealTo> mealsTo2 = filteredByCycles(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
+//        mealsTo2.forEach(System.out::println);
 
 //        System.out.println(filteredByStreams(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000));
     }
+
+    public static List<MealTo> getFilteredWithExcess(List<Meal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
+        //1-й шаг:
+        //делаем группировку листа с едой meals по дате
+        //и получаем мапу: ключ-дата, в значении- сумма калорий в этой дате
+        Map<LocalDate, Integer> caloriesSumByDate = meals.stream()
+                .collect(
+                        //в 1-м параметре указываем что группируем по дате (дата будет ключом)
+                        //во втором параметре указываем что в значение надо положить сумму калорий в этой дате
+                        Collectors.groupingBy(Meal::getDate, Collectors.summingInt(Meal::getCalories))
+//                      Collectors.toMap(Meal::getDate, Meal::getCalories, Integer::sum)
+                );
+
+        //2-й шаг:
+        return meals.stream()
+                //фильтруем тот же лист с едой meals по указанному(в параметрах метода) промежутку времени
+                .filter(meal -> TimeUtil.isBetween(meal.getTime(), startTime, endTime))
+                //элементы прошедших фильтр преобразуем в объекты MealTo
+                .map(meal ->
+                        new MealTo(meal.getDateTime(), meal.getDescription(), meal.getCalories(),
+                                //для boolean поля excess объекта MealTo вычисляем true или false
+                                //те в мапе из первого шага: берем значение по ключу(дате) и сравниваем его
+                                //с caloriesPerDay(из параметров метода)
+                                caloriesSumByDate.get(meal.getDate()) > caloriesPerDay))
+                .collect(Collectors.toList());
+    }
+
+
+
 
     public static List<MealTo> filteredByCycles(List<Meal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
         // TODO return filtered list with excess. Implement by cycles
@@ -80,7 +113,7 @@ public class UserMealsUtil {
 
         //с помощью утильного метода фильтруем элементы листа resultsUserMealWithExcess
         for(int i = 0; i < resultsUserMealWithExcess.size(); i++){
-            if(TimeUtil.isBetweenInclusive(LocalTime.of(resultsUserMealWithExcess.get(i).getDateTime().getHour(),
+            if(TimeUtil.isBetween(LocalTime.of(resultsUserMealWithExcess.get(i).getDateTime().getHour(),
                     resultsUserMealWithExcess.get(i).getDateTime().getMinute()), startTime, endTime)) {
 
                 resultsUserMealWithExcessFiltered.add(resultsUserMealWithExcess.get(i));
