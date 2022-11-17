@@ -5,6 +5,7 @@
     <jmxConfigurator/>
 
     <appender name="file" class="ch.qos.logback.core.FileAppender">
+<!--        надо добавить TOPJAVA_ROOT в переменные среды со значением C:\topJava2022-->
         <file>${TOPJAVA_ROOT}/log/topjava.log</file>
 
         <encoder>
