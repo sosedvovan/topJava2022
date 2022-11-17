@@ -28,6 +28,9 @@ public class MealServlet extends HttpServlet {
         repository = new InMemoryMealRepository();
     }
 
+    //принимаем запрос из формы создания/обновления еды
+    //создает/обновляет новый объект Meal, сохраняет с пом репозитория
+    //и редирект на страницу со всем, уже обновленным, списком еды
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
@@ -45,33 +48,49 @@ public class MealServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        //В String action берем параметр action из  request-а (action будет null
+        // или конкретный )
         String action = request.getParameter("action");
 
         switch (action == null ? "all" : action) {
+            //если delete
             case "delete":
+                //получаем id из request
                 int id = getId(request);
                 log.info("Delete {}", id);
+                //удаляем по id
                 repository.delete(id);
                 response.sendRedirect("meals");
                 break;
+            // если   create или   update
             case "create":
             case "update":
+                //если create
                 final Meal meal = "create".equals(action) ?
+                        //создаем новую еду (усекаем секунды)
                         new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 1000) :
+                        //если update - получаем из репозитория уже имеющуюся еду
                         repository.get(getId(request));
+                //созданную еду положим в атрибут для первоначального отображения в форме
                 request.setAttribute("meal", meal);
+                //форвардим на форму
                 request.getRequestDispatcher("/mealForm.jsp").forward(request, response);
                 break;
+            //если all и если по default
             case "all":
             default:
                 log.info("getAll");
+                //в атрибут под ключем "meals" кладем коллекцию List<MealTo>
+                //которую вернет метод getTos (объекты MealTo с правильным полем excess)
                 request.setAttribute("meals",
                         MealsUtil.getTos(repository.getAll(), MealsUtil.DEFAULT_CALORIES_PER_DAY));
+                //форвардим на список всей еды
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;
         }
     }
 
+    //возвращает Integer id из параметров request-а
     private int getId(HttpServletRequest request) {
         String paramId = Objects.requireNonNull(request.getParameter("id"));
         return Integer.parseInt(paramId);
