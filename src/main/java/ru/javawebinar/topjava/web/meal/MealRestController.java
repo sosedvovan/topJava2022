@@ -17,7 +17,8 @@ import java.util.List;
 
 import static ru.javawebinar.topjava.util.ValidationUtil.assureIdConsistent;
 import static ru.javawebinar.topjava.util.ValidationUtil.checkNew;
-
+//тк в проекте у нас пока нет спрингового апликатион-диспатчер-контекста
+//методы этого MealRestController будем вызывать из сервлеты MealServlet
 @Controller
 public class MealRestController {
     private static final Logger log = LoggerFactory.getLogger(MealRestController.class);

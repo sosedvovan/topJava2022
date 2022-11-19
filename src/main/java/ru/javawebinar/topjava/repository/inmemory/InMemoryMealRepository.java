@@ -23,19 +23,30 @@ import static ru.javawebinar.topjava.repository.inmemory.InMemoryUserRepository.
 public class InMemoryMealRepository implements MealRepository {
 
     // Map  userId -> mealRepository
+    //то для каждого юзера или админа будет свой репозиторий для еды(объект InMemoryBaseRepository<Meal>
+    // который может хранить <Meal> в своей внутренней мапе)
     private Map<Integer, InMemoryBaseRepository<Meal>> usersMealsMap = new ConcurrentHashMap<>();
 
     {
+        //еда юзера
         MealsUtil.MEALS.forEach(meal -> save(meal, USER_ID));
 
+        //еда админа
         save(new Meal(LocalDateTime.of(2015, Month.JUNE, 1, 14, 0), "Админ ланч", 510), ADMIN_ID);
         save(new Meal(LocalDateTime.of(2015, Month.JUNE, 1, 21, 0), "Админ ужин", 1500), ADMIN_ID);
     }
 
 
+    //у нас захардкоденно 2-а юзера(админ и юзер)
+    //из сервиса в параметры здесь получаем еду (без Id) и Id юзера, или админа
     @Override
     public Meal save(Meal meal, int userId) {
-        InMemoryBaseRepository<Meal> meals = usersMealsMap.computeIfAbsent(userId, uid -> new InMemoryBaseRepository<>());
+        //хитрым образом получаем объект MemoryBase<Meal> класса(способного хранить Meal)
+        //из возврата метода computeIfAbsent
+        //https://javarush.ru/groups/posts/524-khvatit-pisatjh-ciklih-top-10-luchshikh-metodov-dlja-rabotih-s-kollekcijami-iz-java8
+        InMemoryBaseRepository<Meal> meals = usersMealsMap.computeIfAbsent(userId, uid -> new InMemoryBaseRepository<Meal>());
+        //и на этом полученном объекте(параметризованного едой) вызываем метод объекта для сохр еды
+        //которые вернет Meal уже с id
         return meals.save(meal);
     }
 
@@ -47,7 +58,9 @@ public class InMemoryMealRepository implements MealRepository {
 
     @Override
     public Meal get(int id, int userId) {
+        //сначала получаем хранилище еды-meals юзера, кот пришел в параметры-userId
         InMemoryBaseRepository<Meal> meals = usersMealsMap.get(userId);
+        //и из этого хранилища достаем еду по id еды
         return meals == null ? null : meals.get(id);
     }
 

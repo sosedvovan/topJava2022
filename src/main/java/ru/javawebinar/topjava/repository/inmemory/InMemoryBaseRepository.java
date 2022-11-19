@@ -13,15 +13,18 @@ public class InMemoryBaseRepository<T extends AbstractBaseEntity> {
 
     private static AtomicInteger counter = new AtomicInteger(0);
 
+    //мапа которая может хранить и юзеров и их еду
     private Map<Integer, T> map = new ConcurrentHashMap<>();
 
     public T save(T entry) {
-        if (entry.isNew()) {
-            entry.setId(counter.incrementAndGet());
-            map.put(entry.getId(), entry);
-            return entry;
+        if (entry.isNew()) {//если новая(Id еще не назначен) тогда
+            entry.setId(counter.incrementAndGet());//назначаем id
+            map.put(entry.getId(), entry);//кладем в мапу-мемери-хранилище
+            return entry;//возвращаем объект уже с id
         }
-        return map.computeIfPresent(entry.getId(), (id, oldT) -> entry);
+        //иначе(обновление старой - такой id уже есть в мапе) -
+        //для уже имеющегося id вычисляем новое значение(его берем из аргументов метода)
+        return map.computeIfPresent(entry.getId(), (id, oldT) -> {return entry;});
     }
 
     public boolean delete(int id) {
