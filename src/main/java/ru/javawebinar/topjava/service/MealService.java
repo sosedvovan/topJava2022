@@ -1,5 +1,7 @@
 package ru.javawebinar.topjava.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import ru.javawebinar.topjava.model.Meal;
@@ -15,8 +17,11 @@ import static ru.javawebinar.topjava.util.ValidationUtil.checkNotFoundWithId;
 @Service
 public class MealService {
 
+
+//    @Qualifier(value = "JdbcMealRepository")
     private final MealRepository repository;
 
+//    @Autowired
     public MealService(MealRepository repository) {
         this.repository = repository;
     }
@@ -29,6 +34,9 @@ public class MealService {
         checkNotFoundWithId(repository.delete(id, userId), id);
     }
 
+    //сервис получает 2-е даты и userId (по этим данным надо отфильтровать) и отправляет их в репозиторий
+    //тк даты возможно @Nullable то с пом метода createDateTime создадутся дефолтные даты
+    // (когда фильтруем по дефолтным датам - фильтруем по всем возможным временам)
     public List<Meal> getBetweenDates(@Nullable LocalDate startDate, @Nullable LocalDate endDate, int userId) {
         return repository.getBetween(
                 DateTimeUtil.createDateTime(startDate, LocalDate.MIN, LocalTime.MIN),

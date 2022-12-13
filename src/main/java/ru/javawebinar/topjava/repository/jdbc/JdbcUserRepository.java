@@ -16,6 +16,9 @@ import java.util.List;
 @Repository
 public class JdbcUserRepository implements UserRepository {
 
+    //в классе модели Meal должны быть геттеры и сеттеры и пустой конструктор(и в базовых)
+    //тк классы, кот в полях, их используют
+
     private static final BeanPropertyRowMapper<User> ROW_MAPPER = BeanPropertyRowMapper.newInstance(User.class);
 
     private final JdbcTemplate jdbcTemplate;
@@ -51,6 +54,8 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public boolean delete(int id) {
+        //jdbcTemplate.update вернет кол-во затронутых строк
+        //если метод вернет false- значит не одна строка не обновилась
         return jdbcTemplate.update("DELETE FROM users WHERE id=?", id) != 0;
     }
 

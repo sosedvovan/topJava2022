@@ -15,6 +15,7 @@
     <!-- Not necessary, already included with component-scan -->
     <context:annotation-config/>
 
+<!--    в контекст спринга попадет только реализация jdbc (а инМемори не попадет)-->
     <context:component-scan base-package="ru.javawebinar.**.repository.jdbc"/>
 
     <context:component-scan base-package="ru.javawebinar.**.service"/>

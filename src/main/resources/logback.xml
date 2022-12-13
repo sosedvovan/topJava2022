@@ -20,9 +20,15 @@
         </encoder>
     </appender>
 
+<!--добавили чтобы sql запросы показывал в терминале когда тесты запускаем-->
+<!--те когда на рантайме обращаются к классам из этой папки(к роуМапперу например)
+    - будет сообщение от логера с уровнем "debug"-->
+    <logger name="org.springframwork.jdbc" level="debug"/>
+
     <logger name="ru.javawebinar.topjava" level="debug"/>
 
-    <root level="info">
+<!--уровень был "info"  -->
+    <root level="WARN">
         <appender-ref ref="file"/>
         <appender-ref ref="console"/>
     </root>

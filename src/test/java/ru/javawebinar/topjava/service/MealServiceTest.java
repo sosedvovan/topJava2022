@@ -30,7 +30,9 @@ public class MealServiceTest {
 
     @Test
     public void delete() throws Exception {
+        //удаляем еду с id=100_002
         service.delete(MEAL1_ID, USER_ID);
+        //getAll возвращает лист с едой отсортированный по дате в убывающ порядке(desc)
         assertMatch(service.getAll(USER_ID), MEAL6, MEAL5, MEAL4, MEAL3, MEAL2);
     }
 

@@ -13,9 +13,11 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class UserServlet extends HttpServlet {
     private static final Logger log = getLogger(UserServlet.class);
 
+    //из формы на стр индекс попадаем сюда выбрав юзера и идем в сервлету "meals"
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         int userId = Integer.parseInt(request.getParameter("userId"));
+        //userId сохраним в поле класса SecurityUtil (а в контролеере и сервисе будем смотреть на это поле (типа принципал))
         SecurityUtil.setAuthUserId(userId);
         response.sendRedirect("meals");
     }
